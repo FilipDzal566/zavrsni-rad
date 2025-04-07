@@ -19,6 +19,7 @@
         const text=document.getElementById("text");
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
+        let start;
         let curImage=null;
         let img = new Image();
         classes = [
@@ -43,12 +44,13 @@
                 const results = await session.run({'input':tensor1});
                 const data = results.output.data
                 text.innerHTML=(`data of result tensor 'c': ${classes[data]}`);
-
+                console.log(`Time it took (inside function): ${performance.now()-start}`)
             } catch (e) {
                 text.innerHTML=(`failed to inference ONNX model: ${e}.`);
             }
         }
         imageInput.addEventListener('change', function (event) {
+            start=performance.now();
             if (imageInput.files[0]==null || imageInput.files[0]==curImage){
                 console.log("exiting")
                 return
@@ -64,6 +66,7 @@
                         main(img)
                     }
                 }}
+                console.log(`Time it took (outside function): ${performance.now()-start}`)
         });
         
         
