@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <input type="file" id="image_input">
+    <img src="./images/image_9.png" id="imag">
+    <canvas style="width:280px;height: 280px;" id="canvas"></canvas>
+    <div id="text"></div>
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+    <script>
+        const imageInput=document.getElementById("image_input");
+        const imag=document.getElementById("imag");
+        const text=document.getElementById("text");
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        let start;
+        let curImage=null;
+        let session;
+        let img = new Image();
+        classes = [
+            "T-shirt/top",
+            "Trouser",
+            "Pullover",
+            "Dress",
+            "Coat",
+            "Sandal",
+            "Shirt",
+            "Sneaker",
+            "Bag",
+            "Ankle boot",
+        ]
+
+        async function startSession(){
+            start=performance.now();
+            session = await ort.InferenceSession.create('./model.onnx');
+            console.log("Session started")
+            console.log(`Time it took to start session: ${performance.now()-start} ms`)
+        }
+        startSession()
+        async function main(imaj) {
+            try {
+                start=performance.now();
+                let tensor1 = await ort.Tensor.fromImage(img);
+                console.log(tensor1)
+                tensor1 = new ort.Tensor(tensor1.type, tensor1.data.slice(0,784), [1,28,28]);
+                const results = await session.run({'input':tensor1});
+                const data = results.output.data
+                text.innerHTML=(`data of result tensor 'c': ${classes[data]}`);
+                console.log(`Time it took to analyze tensor: ${performance.now()-start} ms`)
+            } catch (e) {
+                text.innerHTML=(`failed to inference ONNX model: ${e}.`);
+            }
+        }
+        imageInput.addEventListener('change', function (event) {
+            
+            if (imageInput.files[0]==null || imageInput.files[0]==curImage){
+                console.log("exiting")
+                return
+            }
+            curImage=imageInput.files[0]
+	        let reader = new FileReader();
+	        reader.readAsDataURL(curImage);
+	    	reader.onload = function(evt){
+	    		if( evt.target.readyState == FileReader.DONE) {
+	    			img.src = evt.target.result;
+				    img.onload = () => {
+                        ctx.drawImage(img, 0, 0,200,100);
+                        main(img)
+                    }
+                }}
+        });
+        
+        
+            
+    </script>
+</body>
+
+</html>

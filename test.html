@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="text"></div>
+    <div id="textFailed"></div>
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
+    <script>
+        const text=document.getElementById("text");
+        let start,session,testData,avg,sum=0,counter=0,failedCounter=0,progStart;
+        classes = [
+            "T-shirt/top",
+            "Trouser",
+            "Pullover",
+            "Dress",
+            "Coat",
+            "Sandal",
+            "Shirt",
+            "Sneaker",
+            "Bag",
+            "Ankle boot",
+        ]
+
+        async function startSession(){
+            start=performance.now();
+            session = await ort.InferenceSession.create('./model.onnx');
+            console.log("Session started")
+            console.log(`Time it took to start session: ${performance.now()-start} ms`)
+        }
+        async function loadTestData(){
+            fetch("output.txt")
+            .then((res) => res.text())
+            .then((text) => {
+                testData=JSON.parse(text)
+                console.log(testData)
+                
+            })
+            .catch((e) => console.error(e));
+        }
+        async function main() {
+            try {
+                start=performance.now();
+                const tensor1=new ort.Tensor('float32',x.flat(),[1,28,28])
+                const results = await session.run({'input':tensor1});
+                const data = results.output.data
+                sum+=performance.now()-start;
+                counter++;
+                console.log(`Time it took to analyze tensor: ${performance.now()-start} ms`)
+            } catch (e) {
+                textFailed.innerHTML=(`failed to inference ONNX model: ${failedCounter++}.`);
+            }
+        }
+        async function runAll() {
+        await Promise.all([loadTestData(), startSession()]);
+            for (var i = 0; i < testData.length; i++){
+                await main(testData[i])
+            }
+            text.innerHTML=(`Average time it took to analyze a tensor: ${sum/counter} ms\n
+                             Full time it took to analyze all tensors: ${sum} ms\n
+                             Full time of the program: ${performance.now()-progStart}`);
+        }
+        progStart=performance.now();
+        runAll()
+        
+
+        
+            
+    </script>
+</body>
+
+</html>
