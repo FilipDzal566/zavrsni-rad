@@ -76,11 +76,10 @@ const text = document.getElementById("text");
         
         
         async function sendRequests() {
-            for (let i = 0; i < 4; i++) {
                 startRequest = performance.now()
                 await fetch("https://impala-honest-marmot.ngrok-free.app/", {
                     method: "POST",
-                    body: JSON.stringify(testData[i]),
+                    body: JSON.stringify(testData),
                     headers: {
                         "Content-type": "application/json; charset=UTF-8"
                     }
@@ -89,8 +88,7 @@ const text = document.getElementById("text");
                     .then((json) => {
                         sum+=performance.now()-startRequest
                         counter++;
-                    });
-            }
+                    });  
             textEl.innerHTML = (`Average time it took to analyze a tensor: ${sum / counter} ms<br>
                 Full time it took to analyze all tensors: ${sum} ms<br>
                 Full time of the program: ${performance.now() - progStart}`)
