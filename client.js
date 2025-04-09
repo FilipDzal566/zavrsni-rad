@@ -78,7 +78,7 @@ const text = document.getElementById("text");
         async function sendRequests() {
             for (let i = 0; i < testData.length; i++) {
                 startRequest = performance.now()
-                await fetch("http://localhost:8080/", {
+                await fetch("https://impala-honest-marmot.ngrok-free.app/", {
                     method: "POST",
                     body: JSON.stringify(testData[i]),
                     headers: {
